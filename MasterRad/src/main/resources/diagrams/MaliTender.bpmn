@@ -1,0 +1,568 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="Projekat" isExecutable="true">
+    <startEvent id="sid-DA6E57BE-C3A8-4E6E-8BCB-E4F961A857F7"></startEvent>
+    <userTask id="unosZahteva" name="Unos zahteva" activiti:assignee="${klijent}">
+      <extensionElements>
+        <activiti:formProperty id="ime" name="Ime" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="email" name="Email" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="telefon" name="Telefon" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="kategorijaPosla" name="Kategorija Posla" type="enum" required="true">
+          <activiti:value id="Standalone aplikacija" name="Standalone aplikacija"></activiti:value>
+          <activiti:value id="Web dizajn" name="Web dizajn"></activiti:value>
+          <activiti:value id="Administracija Baza" name="Administracija Baza"></activiti:value>
+          <activiti:value id="Odrzavanje sistema" name="Odrzavanje sistema"></activiti:value>
+          <activiti:value id="Game development" name="Game development"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="rokZaIzvrsenje" name="Rok za izvrsenje posla" type="date" datePattern="MM-dd-yyyy hh:mm" required="true"></activiti:formProperty>
+        <activiti:formProperty id="lokacija" name="Lokacija" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="brojPonuda" name="Broj ponuda" type="enum" required="true">
+          <activiti:value id="3" name="3"></activiti:value>
+          <activiti:value id="4" name="4"></activiti:value>
+          <activiti:value id="5" name="5"></activiti:value>
+          <activiti:value id="6" name="6"></activiti:value>
+          <activiti:value id="7" name="7"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="opisPosla" name="Kratak opis posla" type="string"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="sid-A6FD6BBA-B51D-4A5A-AD78-501757C9FACC" sourceRef="sid-DA6E57BE-C3A8-4E6E-8BCB-E4F961A857F7" targetRef="unosZahteva"></sequenceFlow>
+    <subProcess id="sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5" name="Izbor izvodjaca">
+      <startEvent id="sid-44A886ED-1365-47AA-928F-4CB94A1E0769"></startEvent>
+      <exclusiveGateway id="sid-531FF90C-5C2B-4AFA-B9CA-98AAD53200F4" default="sid-0348CAC6-F2ED-4549-B17B-15120ED36B09"></exclusiveGateway>
+      <serviceTask id="sid-38287E65-3F92-4310-A7EC-1540F3783A2F" name="Poruka korisniku da nema raspolozivih firmi" activiti:type="mail">
+        <extensionElements>
+          <activiti:field name="to">
+            <activiti:expression>${email}</activiti:expression>
+          </activiti:field>
+          <activiti:field name="text">
+            <activiti:string><![CDATA[HI]]></activiti:string>
+          </activiti:field>
+        </extensionElements>
+      </serviceTask>
+      <serviceTask id="sid-651D8C54-D7EE-458B-AE45-90DD731EF405" name="Slanje poruke svakoj firmi" activiti:type="mail">
+        <extensionElements>
+          <activiti:field name="to">
+            <activiti:expression>${email}</activiti:expression>
+          </activiti:field>
+          <activiti:field name="text">
+            <activiti:string><![CDATA[HI]]></activiti:string>
+          </activiti:field>
+        </extensionElements>
+      </serviceTask>
+      <userTask id="prihvatanjePosla" name="Odluka o prihvatanju ponude" activiti:candidateGroups="kompanija">
+        <extensionElements>
+          <activiti:formProperty id="privataPonudu" name="Prihvata ponudu" type="boolean" required="true"></activiti:formProperty>
+          <activiti:formProperty id="cena" name="Cena" type="long" required="true"></activiti:formProperty>
+        </extensionElements>
+      </userTask>
+      <boundaryEvent id="sid-B89EACB1-3355-4751-AC38-E2CA14AF71A6" attachedToRef="prihvatanjePosla" cancelActivity="true">
+        <timerEventDefinition>
+          <timeDuration>P1D/${rokZaIzvrsenje}</timeDuration>
+        </timerEventDefinition>
+      </boundaryEvent>
+      <exclusiveGateway id="sid-E6F5B9E1-045F-4B80-A4DB-AB440FC83397" default="sid-9F3B6064-BF2B-44F5-BA86-C4E24C37A889"></exclusiveGateway>
+      <endEvent id="sid-B00F7261-8ABB-4308-A44D-182030D817F1"></endEvent>
+      <serviceTask id="odabirFirmi" name="Odabir 3-7 firmi" activiti:class="asd"></serviceTask>
+      <serviceTask id="biranjeFirmi" name="Provera da li ima firmi" activiti:class="asd"></serviceTask>
+      <endEvent id="sid-E3A7D493-4821-47F6-A7DF-9322381CEE0E">
+        <errorEventDefinition></errorEventDefinition>
+      </endEvent>
+      <serviceTask id="proveraBrojaFirmi" name="Provera da li ima dovoljno firmi" activiti:class="asd"></serviceTask>
+      <endEvent id="sid-1424A3E6-49B0-4839-A45B-56CBB6655FF5">
+        <errorEventDefinition></errorEventDefinition>
+      </endEvent>
+      <sequenceFlow id="sid-E81F6FC3-5118-42F6-B9DE-790E5824020A" sourceRef="sid-44A886ED-1365-47AA-928F-4CB94A1E0769" targetRef="biranjeFirmi"></sequenceFlow>
+      <sequenceFlow id="sid-AF5F7D2C-AD1E-4ACF-A942-0EC3826107F9" sourceRef="biranjeFirmi" targetRef="sid-531FF90C-5C2B-4AFA-B9CA-98AAD53200F4"></sequenceFlow>
+      <sequenceFlow id="sid-592AC06E-55E1-482E-8367-289D81187CA0" sourceRef="sid-38287E65-3F92-4310-A7EC-1540F3783A2F" targetRef="sid-E3A7D493-4821-47F6-A7DF-9322381CEE0E"></sequenceFlow>
+      <sequenceFlow id="sid-C02A73ED-0538-4210-8EBB-4FE60A2AFE64" sourceRef="odabirFirmi" targetRef="sid-651D8C54-D7EE-458B-AE45-90DD731EF405"></sequenceFlow>
+      <sequenceFlow id="sid-FB860BDE-402E-4D64-811F-6185B3D99079" sourceRef="sid-651D8C54-D7EE-458B-AE45-90DD731EF405" targetRef="prihvatanjePosla"></sequenceFlow>
+      <sequenceFlow id="sid-34514F34-2507-42B6-9296-058B3CB0F131" sourceRef="prihvatanjePosla" targetRef="proveraBrojaFirmi"></sequenceFlow>
+      <sequenceFlow id="sid-A633FCED-4B7E-49C7-B800-37B4C2754500" sourceRef="proveraBrojaFirmi" targetRef="sid-E6F5B9E1-045F-4B80-A4DB-AB440FC83397"></sequenceFlow>
+      <sequenceFlow id="sid-A4E21D7F-3FB2-419F-9FBA-1A5E50CEAA52" sourceRef="sid-B89EACB1-3355-4751-AC38-E2CA14AF71A6" targetRef="proveraBrojaFirmi"></sequenceFlow>
+      <sequenceFlow id="sid-412208FB-F2FA-4B06-8048-E4B25599E2AB" name="Nema dovoljno ponuda" sourceRef="sid-E6F5B9E1-045F-4B80-A4DB-AB440FC83397" targetRef="sid-1424A3E6-49B0-4839-A45B-56CBB6655FF5"></sequenceFlow>
+      <sequenceFlow id="sid-9F3B6064-BF2B-44F5-BA86-C4E24C37A889" name="Ponude prikupljene" sourceRef="sid-E6F5B9E1-045F-4B80-A4DB-AB440FC83397" targetRef="sid-B00F7261-8ABB-4308-A44D-182030D817F1"></sequenceFlow>
+      <sequenceFlow id="sid-0348CAC6-F2ED-4549-B17B-15120ED36B09" sourceRef="sid-531FF90C-5C2B-4AFA-B9CA-98AAD53200F4" targetRef="odabirFirmi"></sequenceFlow>
+      <sequenceFlow id="sid-479D4A41-A1F1-434E-B11F-0751EF500867" name="Nema firmi" sourceRef="sid-531FF90C-5C2B-4AFA-B9CA-98AAD53200F4" targetRef="sid-38287E65-3F92-4310-A7EC-1540F3783A2F"></sequenceFlow>
+      <sequenceFlow id="sid-1621440A-9597-4CEB-9303-EA96688815A9" name="Biranje dodatnih ponuda" sourceRef="sid-E6F5B9E1-045F-4B80-A4DB-AB440FC83397" targetRef="odabirFirmi"></sequenceFlow>
+    </subProcess>
+    <sequenceFlow id="sid-98F0D35C-8A4C-45DB-8F06-D540E008F888" sourceRef="slanjePonudaKlijentu" targetRef="klijentBiraPonudu"></sequenceFlow>
+    <sequenceFlow id="sid-191ECB4D-3663-4ACF-9556-8E12604ECD79" sourceRef="klijentBiraPonudu" targetRef="sid-B47F24FF-C83E-4D19-9AE9-0AE227B19CF4"></sequenceFlow>
+    <sequenceFlow id="sid-C403CB58-D92D-4E52-828A-F8CD400E1B08" sourceRef="zahtevNovihPonuda" targetRef="sid-749262A2-DAF6-40D4-89FF-8DD51243F618"></sequenceFlow>
+    <sequenceFlow id="sid-90AE5D96-2087-4247-A2EC-E2C0069AAD3A" sourceRef="sid-98E4FAB1-0272-42BE-8E3C-8763373D99CC" targetRef="odgovorAgenta"></sequenceFlow>
+    <serviceTask id="sid-98E4FAB1-0272-42BE-8E3C-8763373D99CC" name="Notifikacija o postavljenom zahtevu" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:expression>${email}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="text">
+          <activiti:string><![CDATA[HI]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <userTask id="odgovorAgenta" name="Odgovor agenta na pitanja klijenta" activiti:candidateGroups="kompanija">
+      <extensionElements>
+        <activiti:formProperty id="obrazlozenje" name="Obrazlozenje" type="string" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="klijentBiraPonudu" name="Klijent bira ponude/dodatno objasnjenje" activiti:assignee="${klijent}">
+      <extensionElements>
+        <activiti:formProperty id="dodatnoObjasnjenje" name="Dodatno objasnjenje" type="string"></activiti:formProperty>
+        <activiti:formProperty id="izborPonuda" name="Izbor prikazanih ponuda" type="enum">
+          <activiti:value id="prihvatam ponudu" name="prihvatam ponudu"></activiti:value>
+          <activiti:value id="zelim dodatno obrazlozenje" name="zelim dodatno obrazlozenje"></activiti:value>
+          <activiti:value id="u potpunosti odustajem" name="u potpunosti odustajem"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="sid-B47F24FF-C83E-4D19-9AE9-0AE227B19CF4"></exclusiveGateway>
+    <userTask id="zahtevNovihPonuda" name="Zahtev novih ponuda/odustajanje" activiti:assignee="${klijent}">
+      <extensionElements>
+        <activiti:formProperty id="zahtevNovih" name="Zahtev novih ili odustajanje" type="enum" required="true">
+          <activiti:value id="Zahtev novih ponuda" name="Zahtev novih ponuda"></activiti:value>
+          <activiti:value id="Odustajanje" name="Odustajanje"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <exclusiveGateway id="sid-749262A2-DAF6-40D4-89FF-8DD51243F618"></exclusiveGateway>
+    <endEvent id="sid-CC01F178-7B9E-472F-AB4C-08936A01821E">
+      <terminateEventDefinition></terminateEventDefinition>
+    </endEvent>
+    <sequenceFlow id="sid-A03D6705-B65A-43B3-87DF-CACF8E23CE62" sourceRef="sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5" targetRef="slanjePonudaKlijentu"></sequenceFlow>
+    <boundaryEvent id="sid-2F0B9D7D-A629-49F2-89D4-26377218C0F7" attachedToRef="sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>P1D/${rokZaIzvrsenje}</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <endEvent id="sid-E4A81212-E5A8-4D95-B4A1-07729BBC35DE">
+      <terminateEventDefinition></terminateEventDefinition>
+    </endEvent>
+    <userTask id="odlukaKlijenta" name="Odluka klijenta" activiti:assignee="${klijent}">
+      <extensionElements>
+        <activiti:formProperty id="obrazlozenje" name="Obrazlozenje" type="string" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="izborPosleObjasnjenja" name="Izbor posle procitanog obrazlozenja" type="enum" required="true">
+          <activiti:value id="prihvatam" name="prihvatam"></activiti:value>
+          <activiti:value id="hocu drugu ponudu" name="hocu drugu ponudu"></activiti:value>
+          <activiti:value id="u potpunosti odustajem" name="u potpunosti odustajem"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="sid-7319EAEF-1228-47C9-8927-FB9C382C8B1A" sourceRef="odgovorAgenta" targetRef="odlukaKlijenta"></sequenceFlow>
+    <exclusiveGateway id="sid-C9BDE111-0639-43AB-B3ED-36FB02D9927D"></exclusiveGateway>
+    <sequenceFlow id="sid-4A831716-E3F2-4035-889D-8AA6AFBC6F75" sourceRef="odlukaKlijenta" targetRef="sid-C9BDE111-0639-43AB-B3ED-36FB02D9927D"></sequenceFlow>
+    <endEvent id="sid-0E88A234-1971-4124-BA5F-889745F5C7AE">
+      <terminateEventDefinition></terminateEventDefinition>
+    </endEvent>
+    <intermediateCatchEvent id="sid-A49BC18B-F002-4001-8494-63704FD65220" name="Istek termina za obavljanje posla">
+      <timerEventDefinition>
+        <timeDuration>${rokZaIzvrsenje}</timeDuration>
+      </timerEventDefinition>
+    </intermediateCatchEvent>
+    <sequenceFlow id="sid-40914E0C-A24B-4C15-9568-3E6119E2867A" sourceRef="sid-99EAC256-B400-4DE4-8224-A2AD70D1616D" targetRef="sid-A49BC18B-F002-4001-8494-63704FD65220"></sequenceFlow>
+    <sequenceFlow id="sid-4C632C81-CF21-4396-80D4-CEDC2EE0CB18" sourceRef="sid-A49BC18B-F002-4001-8494-63704FD65220" targetRef="sid-A4B4A1F2-2804-430E-9776-060C1AC84556"></sequenceFlow>
+    <serviceTask id="sid-A4B4A1F2-2804-430E-9776-060C1AC84556" name="Poruka klijentu da moze oceniti izvrsenje" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:expression>${email}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="text">
+          <activiti:string><![CDATA[HI]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <userTask id="ocenaIzvodjaca" name="Ocenjivanje izvodjaca" activiti:assignee="${klijent}">
+      <extensionElements>
+        <activiti:formProperty id="ocenaIzvodjaca" name="Ocena izvodjaca" type="enum" required="true">
+          <activiti:value id="1" name="1"></activiti:value>
+          <activiti:value id="2" name="2"></activiti:value>
+          <activiti:value id="3" name="3"></activiti:value>
+          <activiti:value id="4" name="4"></activiti:value>
+          <activiti:value id="5" name="5"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="komentar" name="Komentar klijenta" type="string" required="true"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="sid-531E4592-537E-4122-91FF-7DF899D28F0D" sourceRef="sid-A4B4A1F2-2804-430E-9776-060C1AC84556" targetRef="ocenaIzvodjaca"></sequenceFlow>
+    <endEvent id="sid-6DA7C513-7694-4E0F-8804-9921BBFC9BDC"></endEvent>
+    <sequenceFlow id="sid-C7327AFA-6562-46CE-A94D-8B0C5DD39D01" name="Kraj procesa" sourceRef="ocenaIzvodjaca" targetRef="sid-6DA7C513-7694-4E0F-8804-9921BBFC9BDC"></sequenceFlow>
+    <sequenceFlow id="sid-8C869D1C-2E63-4731-B098-3019A026826D" sourceRef="unosZahteva" targetRef="sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5"></sequenceFlow>
+    <serviceTask id="slanjePonudaKlijentu" name="Slanje ponuda klijentu" activiti:class="asd"></serviceTask>
+    <exclusiveGateway id="sid-99EAC256-B400-4DE4-8224-A2AD70D1616D"></exclusiveGateway>
+    <serviceTask id="sid-F9A6A83D-1953-40D6-861D-7438B728DA54" name="Poruka da izvodjaci nisu izabrani na vreme" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:expression>${email}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="text">
+          <activiti:string><![CDATA[HI]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="sid-504C7BF5-B1CF-4449-9076-79B4908BF6B2" sourceRef="sid-F9A6A83D-1953-40D6-861D-7438B728DA54" targetRef="sid-E4A81212-E5A8-4D95-B4A1-07729BBC35DE"></sequenceFlow>
+    <sequenceFlow id="sid-15E9B7FA-7358-4B73-9ED1-FC516E58E163" name="Isteklo vreme za biranje izvodjaca" sourceRef="sid-2F0B9D7D-A629-49F2-89D4-26377218C0F7" targetRef="sid-F9A6A83D-1953-40D6-861D-7438B728DA54"></sequenceFlow>
+    <boundaryEvent id="sid-99532A01-E59A-4F3B-9BEA-C8E624E35BC9" attachedToRef="sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5">
+      <errorEventDefinition></errorEventDefinition>
+    </boundaryEvent>
+    <serviceTask id="nemaRaspolozivihFirmi" name="Nema raspolozivih firmi/vreme za prihvatanje pounde isteklo" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:expression>${email}</activiti:expression>
+        </activiti:field>
+        <activiti:field name="text">
+          <activiti:string><![CDATA[HI]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="sid-99C9CD5A-1CB2-4DA7-B1CB-51776D5896AC" sourceRef="sid-99532A01-E59A-4F3B-9BEA-C8E624E35BC9" targetRef="nemaRaspolozivihFirmi"></sequenceFlow>
+    <endEvent id="sid-10391CEA-7DD2-4F21-98C2-6FF12C016E72">
+      <terminateEventDefinition></terminateEventDefinition>
+    </endEvent>
+    <sequenceFlow id="sid-3533C0F1-4928-41F7-8355-B15836FED67F" sourceRef="nemaRaspolozivihFirmi" targetRef="sid-10391CEA-7DD2-4F21-98C2-6FF12C016E72"></sequenceFlow>
+    <sequenceFlow id="sid-8C4BD5D0-3E35-4C47-A249-CC3B0BF2C7BF" name="Klijent prihvatio ponudu" sourceRef="sid-C9BDE111-0639-43AB-B3ED-36FB02D9927D" targetRef="sid-99EAC256-B400-4DE4-8224-A2AD70D1616D">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${izborPosleObjasnjenja == "prihvatam"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-2CDFC7ED-469C-47A9-B4DD-31E5DB5763F8" name="Klijent odbio datu ponudu, pregovara sa drugim" sourceRef="sid-C9BDE111-0639-43AB-B3ED-36FB02D9927D" targetRef="klijentBiraPonudu">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${izborPosleObjasnjenja == "hocu drugu ponudu"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-D06235B3-FB6E-4662-AA93-3A14030A0714" name="Klijent u potpunosti odustao od posla" sourceRef="sid-C9BDE111-0639-43AB-B3ED-36FB02D9927D" targetRef="sid-0E88A234-1971-4124-BA5F-889745F5C7AE">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${izborPosleObjasnjenja == "u potpunosti odustajem"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-7A1CC640-6FD3-46F6-AE6C-7B19AAF7B62B" name="Klijent zeli obrazlozenje" sourceRef="sid-B47F24FF-C83E-4D19-9AE9-0AE227B19CF4" targetRef="sid-98E4FAB1-0272-42BE-8E3C-8763373D99CC">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${izborPonuda == "zelim dodatno obrazlozenje"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-BE9397FE-2F8E-4966-BA29-727528BE3ED6" name="Odbio sve ponude" sourceRef="sid-B47F24FF-C83E-4D19-9AE9-0AE227B19CF4" targetRef="zahtevNovihPonuda">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${izborPonuda == "u potpunosti odustajem"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-126860F3-676C-4BDD-9BBF-A1B435F0197C" name="Klijent odustao" sourceRef="sid-749262A2-DAF6-40D4-89FF-8DD51243F618" targetRef="sid-CC01F178-7B9E-472F-AB4C-08936A01821E">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${zahtevNovih == "Odustajanje"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-7B58701C-E3C2-45A3-A347-C1CDFBC60D06" name="Zahtev novi ponuda" sourceRef="sid-749262A2-DAF6-40D4-89FF-8DD51243F618" targetRef="sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${zahtevNovih == "Zahtev novih ponuda"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="sid-858D8D83-377C-4E0F-9381-79FDD584AC9A" name="Klijent ne zeli dodatna objasnjenja" sourceRef="sid-B47F24FF-C83E-4D19-9AE9-0AE227B19CF4" targetRef="sid-99EAC256-B400-4DE4-8224-A2AD70D1616D">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${izborPonuda == "prihvatam"}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_Projekat">
+    <bpmndi:BPMNPlane bpmnElement="Projekat" id="BPMNPlane_Projekat">
+      <bpmndi:BPMNShape bpmnElement="sid-DA6E57BE-C3A8-4E6E-8BCB-E4F961A857F7" id="BPMNShape_sid-DA6E57BE-C3A8-4E6E-8BCB-E4F961A857F7">
+        <omgdc:Bounds height="35.0" width="35.0" x="30.0" y="69.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="unosZahteva" id="BPMNShape_unosZahteva">
+        <omgdc:Bounds height="80.0" width="100.0" x="105.0" y="45.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5" id="BPMNShape_sid-F5AFD135-6812-4A6E-B6B2-941E22EFA2E5">
+        <omgdc:Bounds height="682.0" width="788.0" x="285.0" y="0.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-44A886ED-1365-47AA-928F-4CB94A1E0769" id="BPMNShape_sid-44A886ED-1365-47AA-928F-4CB94A1E0769">
+        <omgdc:Bounds height="35.0" width="35.0" x="300.0" y="70.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-531FF90C-5C2B-4AFA-B9CA-98AAD53200F4" id="BPMNShape_sid-531FF90C-5C2B-4AFA-B9CA-98AAD53200F4">
+        <omgdc:Bounds height="40.0" width="40.0" x="616.0" y="64.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-38287E65-3F92-4310-A7EC-1540F3783A2F" id="BPMNShape_sid-38287E65-3F92-4310-A7EC-1540F3783A2F">
+        <omgdc:Bounds height="80.0" width="100.0" x="765.0" y="45.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-651D8C54-D7EE-458B-AE45-90DD731EF405" id="BPMNShape_sid-651D8C54-D7EE-458B-AE45-90DD731EF405">
+        <omgdc:Bounds height="80.0" width="100.0" x="585.0" y="255.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="prihvatanjePosla" id="BPMNShape_prihvatanjePosla">
+        <omgdc:Bounds height="80.0" width="100.0" x="585.0" y="360.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-B89EACB1-3355-4751-AC38-E2CA14AF71A6" id="BPMNShape_sid-B89EACB1-3355-4751-AC38-E2CA14AF71A6">
+        <omgdc:Bounds height="30.0" width="30.0" x="568.0" y="396.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-E6F5B9E1-045F-4B80-A4DB-AB440FC83397" id="BPMNShape_sid-E6F5B9E1-045F-4B80-A4DB-AB440FC83397">
+        <omgdc:Bounds height="40.0" width="40.0" x="615.0" y="615.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-B00F7261-8ABB-4308-A44D-182030D817F1" id="BPMNShape_sid-B00F7261-8ABB-4308-A44D-182030D817F1">
+        <omgdc:Bounds height="35.0" width="35.0" x="450.0" y="621.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="odabirFirmi" id="BPMNShape_odabirFirmi">
+        <omgdc:Bounds height="80.0" width="100.0" x="586.0" y="135.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="biranjeFirmi" id="BPMNShape_biranjeFirmi">
+        <omgdc:Bounds height="80.0" width="100.0" x="390.0" y="45.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-E3A7D493-4821-47F6-A7DF-9322381CEE0E" id="BPMNShape_sid-E3A7D493-4821-47F6-A7DF-9322381CEE0E">
+        <omgdc:Bounds height="35.0" width="35.0" x="930.0" y="71.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="proveraBrojaFirmi" id="BPMNShape_proveraBrojaFirmi">
+        <omgdc:Bounds height="80.0" width="100.0" x="585.0" y="480.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-1424A3E6-49B0-4839-A45B-56CBB6655FF5" id="BPMNShape_sid-1424A3E6-49B0-4839-A45B-56CBB6655FF5">
+        <omgdc:Bounds height="35.0" width="35.0" x="885.0" y="645.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-2F0B9D7D-A629-49F2-89D4-26377218C0F7" id="BPMNShape_sid-2F0B9D7D-A629-49F2-89D4-26377218C0F7">
+        <omgdc:Bounds height="30.0" width="30.0" x="1015.0" y="666.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-99532A01-E59A-4F3B-9BEA-C8E624E35BC9" id="BPMNShape_sid-99532A01-E59A-4F3B-9BEA-C8E624E35BC9">
+        <omgdc:Bounds height="30.0" width="30.0" x="269.0" y="531.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-98E4FAB1-0272-42BE-8E3C-8763373D99CC" id="BPMNShape_sid-98E4FAB1-0272-42BE-8E3C-8763373D99CC">
+        <omgdc:Bounds height="80.0" width="100.0" x="825.0" y="910.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="odgovorAgenta" id="BPMNShape_odgovorAgenta">
+        <omgdc:Bounds height="80.0" width="100.0" x="825.0" y="1020.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="klijentBiraPonudu" id="BPMNShape_klijentBiraPonudu">
+        <omgdc:Bounds height="80.0" width="100.0" x="600.0" y="825.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-B47F24FF-C83E-4D19-9AE9-0AE227B19CF4" id="BPMNShape_sid-B47F24FF-C83E-4D19-9AE9-0AE227B19CF4">
+        <omgdc:Bounds height="40.0" width="40.0" x="632.0" y="930.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="zahtevNovihPonuda" id="BPMNShape_zahtevNovihPonuda">
+        <omgdc:Bounds height="80.0" width="100.0" x="376.0" y="910.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-749262A2-DAF6-40D4-89FF-8DD51243F618" id="BPMNShape_sid-749262A2-DAF6-40D4-89FF-8DD51243F618">
+        <omgdc:Bounds height="40.0" width="40.0" x="406.0" y="774.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-CC01F178-7B9E-472F-AB4C-08936A01821E" id="BPMNShape_sid-CC01F178-7B9E-472F-AB4C-08936A01821E">
+        <omgdc:Bounds height="35.0" width="35.0" x="270.0" y="780.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-E4A81212-E5A8-4D95-B4A1-07729BBC35DE" id="BPMNShape_sid-E4A81212-E5A8-4D95-B4A1-07729BBC35DE">
+        <omgdc:Bounds height="35.0" width="35.0" x="825.0" y="735.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="odlukaKlijenta" id="BPMNShape_odlukaKlijenta">
+        <omgdc:Bounds height="80.0" width="100.0" x="825.0" y="1140.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-C9BDE111-0639-43AB-B3ED-36FB02D9927D" id="BPMNShape_sid-C9BDE111-0639-43AB-B3ED-36FB02D9927D">
+        <omgdc:Bounds height="40.0" width="40.0" x="855.0" y="1290.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-0E88A234-1971-4124-BA5F-889745F5C7AE" id="BPMNShape_sid-0E88A234-1971-4124-BA5F-889745F5C7AE">
+        <omgdc:Bounds height="35.0" width="35.0" x="861.0" y="1635.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-A49BC18B-F002-4001-8494-63704FD65220" id="BPMNShape_sid-A49BC18B-F002-4001-8494-63704FD65220">
+        <omgdc:Bounds height="35.0" width="35.0" x="636.0" y="1365.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-A4B4A1F2-2804-430E-9776-060C1AC84556" id="BPMNShape_sid-A4B4A1F2-2804-430E-9776-060C1AC84556">
+        <omgdc:Bounds height="80.0" width="100.0" x="602.0" y="1470.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="ocenaIzvodjaca" id="BPMNShape_ocenaIzvodjaca">
+        <omgdc:Bounds height="80.0" width="100.0" x="602.0" y="1605.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-6DA7C513-7694-4E0F-8804-9921BBFC9BDC" id="BPMNShape_sid-6DA7C513-7694-4E0F-8804-9921BBFC9BDC">
+        <omgdc:Bounds height="35.0" width="35.0" x="801.0" y="1631.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="slanjePonudaKlijentu" id="BPMNShape_slanjePonudaKlijentu">
+        <omgdc:Bounds height="80.0" width="100.0" x="600.0" y="707.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-99EAC256-B400-4DE4-8224-A2AD70D1616D" id="BPMNShape_sid-99EAC256-B400-4DE4-8224-A2AD70D1616D">
+        <omgdc:Bounds height="40.0" width="40.0" x="632.0" y="1290.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-F9A6A83D-1953-40D6-861D-7438B728DA54" id="BPMNShape_sid-F9A6A83D-1953-40D6-861D-7438B728DA54">
+        <omgdc:Bounds height="80.0" width="100.0" x="891.0" y="707.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="nemaRaspolozivihFirmi" id="BPMNShape_nemaRaspolozivihFirmi">
+        <omgdc:Bounds height="80.0" width="100.0" x="165.0" y="600.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-10391CEA-7DD2-4F21-98C2-6FF12C016E72" id="BPMNShape_sid-10391CEA-7DD2-4F21-98C2-6FF12C016E72">
+        <omgdc:Bounds height="35.0" width="35.0" x="201.0" y="729.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="sid-A6FD6BBA-B51D-4A5A-AD78-501757C9FACC" id="BPMNEdge_sid-A6FD6BBA-B51D-4A5A-AD78-501757C9FACC">
+        <omgdi:waypoint x="65.0" y="86.0"></omgdi:waypoint>
+        <omgdi:waypoint x="105.0" y="85.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-E81F6FC3-5118-42F6-B9DE-790E5824020A" id="BPMNEdge_sid-E81F6FC3-5118-42F6-B9DE-790E5824020A">
+        <omgdi:waypoint x="335.0" y="87.0"></omgdi:waypoint>
+        <omgdi:waypoint x="390.0" y="85.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-AF5F7D2C-AD1E-4ACF-A942-0EC3826107F9" id="BPMNEdge_sid-AF5F7D2C-AD1E-4ACF-A942-0EC3826107F9">
+        <omgdi:waypoint x="490.0" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="616.0" y="84.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-592AC06E-55E1-482E-8367-289D81187CA0" id="BPMNEdge_sid-592AC06E-55E1-482E-8367-289D81187CA0">
+        <omgdi:waypoint x="865.0" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="930.0" y="88.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-C02A73ED-0538-4210-8EBB-4FE60A2AFE64" id="BPMNEdge_sid-C02A73ED-0538-4210-8EBB-4FE60A2AFE64">
+        <omgdi:waypoint x="636.0" y="215.0"></omgdi:waypoint>
+        <omgdi:waypoint x="635.0" y="255.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-FB860BDE-402E-4D64-811F-6185B3D99079" id="BPMNEdge_sid-FB860BDE-402E-4D64-811F-6185B3D99079">
+        <omgdi:waypoint x="635.0" y="335.0"></omgdi:waypoint>
+        <omgdi:waypoint x="635.0" y="360.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-34514F34-2507-42B6-9296-058B3CB0F131" id="BPMNEdge_sid-34514F34-2507-42B6-9296-058B3CB0F131">
+        <omgdi:waypoint x="635.0" y="440.0"></omgdi:waypoint>
+        <omgdi:waypoint x="635.0" y="480.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-A633FCED-4B7E-49C7-B800-37B4C2754500" id="BPMNEdge_sid-A633FCED-4B7E-49C7-B800-37B4C2754500">
+        <omgdi:waypoint x="635.0" y="560.0"></omgdi:waypoint>
+        <omgdi:waypoint x="635.0" y="615.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-A4E21D7F-3FB2-419F-9FBA-1A5E50CEAA52" id="BPMNEdge_sid-A4E21D7F-3FB2-419F-9FBA-1A5E50CEAA52">
+        <omgdi:waypoint x="568.0" y="411.0"></omgdi:waypoint>
+        <omgdi:waypoint x="557.0" y="412.0"></omgdi:waypoint>
+        <omgdi:waypoint x="557.0" y="519.0"></omgdi:waypoint>
+        <omgdi:waypoint x="585.0" y="520.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-412208FB-F2FA-4B06-8048-E4B25599E2AB" id="BPMNEdge_sid-412208FB-F2FA-4B06-8048-E4B25599E2AB">
+        <omgdi:waypoint x="635.0" y="655.0"></omgdi:waypoint>
+        <omgdi:waypoint x="672.0" y="664.0"></omgdi:waypoint>
+        <omgdi:waypoint x="845.0" y="659.0"></omgdi:waypoint>
+        <omgdi:waypoint x="885.0" y="662.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="645.0" y="655.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-9F3B6064-BF2B-44F5-BA86-C4E24C37A889" id="BPMNEdge_sid-9F3B6064-BF2B-44F5-BA86-C4E24C37A889">
+        <omgdi:waypoint x="615.0" y="635.0"></omgdi:waypoint>
+        <omgdi:waypoint x="485.0" y="638.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="625.0" y="635.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-0348CAC6-F2ED-4549-B17B-15120ED36B09" id="BPMNEdge_sid-0348CAC6-F2ED-4549-B17B-15120ED36B09">
+        <omgdi:waypoint x="636.0" y="104.0"></omgdi:waypoint>
+        <omgdi:waypoint x="636.0" y="135.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-479D4A41-A1F1-434E-B11F-0751EF500867" id="BPMNEdge_sid-479D4A41-A1F1-434E-B11F-0751EF500867">
+        <omgdi:waypoint x="656.0" y="84.0"></omgdi:waypoint>
+        <omgdi:waypoint x="765.0" y="85.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="666.0" y="84.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-1621440A-9597-4CEB-9303-EA96688815A9" id="BPMNEdge_sid-1621440A-9597-4CEB-9303-EA96688815A9">
+        <omgdi:waypoint x="655.0" y="635.0"></omgdi:waypoint>
+        <omgdi:waypoint x="767.0" y="635.0"></omgdi:waypoint>
+        <omgdi:waypoint x="767.0" y="175.0"></omgdi:waypoint>
+        <omgdi:waypoint x="686.0" y="175.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="665.0" y="635.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-98F0D35C-8A4C-45DB-8F06-D540E008F888" id="BPMNEdge_sid-98F0D35C-8A4C-45DB-8F06-D540E008F888">
+        <omgdi:waypoint x="650.0" y="787.0"></omgdi:waypoint>
+        <omgdi:waypoint x="650.0" y="825.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-191ECB4D-3663-4ACF-9556-8E12604ECD79" id="BPMNEdge_sid-191ECB4D-3663-4ACF-9556-8E12604ECD79">
+        <omgdi:waypoint x="650.0" y="905.0"></omgdi:waypoint>
+        <omgdi:waypoint x="652.0" y="930.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-C403CB58-D92D-4E52-828A-F8CD400E1B08" id="BPMNEdge_sid-C403CB58-D92D-4E52-828A-F8CD400E1B08">
+        <omgdi:waypoint x="426.0" y="910.0"></omgdi:waypoint>
+        <omgdi:waypoint x="426.0" y="814.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-90AE5D96-2087-4247-A2EC-E2C0069AAD3A" id="BPMNEdge_sid-90AE5D96-2087-4247-A2EC-E2C0069AAD3A">
+        <omgdi:waypoint x="875.0" y="990.0"></omgdi:waypoint>
+        <omgdi:waypoint x="875.0" y="1020.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-A03D6705-B65A-43B3-87DF-CACF8E23CE62" id="BPMNEdge_sid-A03D6705-B65A-43B3-87DF-CACF8E23CE62">
+        <omgdi:waypoint x="679.0" y="682.0"></omgdi:waypoint>
+        <omgdi:waypoint x="650.0" y="707.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7319EAEF-1228-47C9-8927-FB9C382C8B1A" id="BPMNEdge_sid-7319EAEF-1228-47C9-8927-FB9C382C8B1A">
+        <omgdi:waypoint x="875.0" y="1100.0"></omgdi:waypoint>
+        <omgdi:waypoint x="875.0" y="1140.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-4A831716-E3F2-4035-889D-8AA6AFBC6F75" id="BPMNEdge_sid-4A831716-E3F2-4035-889D-8AA6AFBC6F75">
+        <omgdi:waypoint x="875.0" y="1220.0"></omgdi:waypoint>
+        <omgdi:waypoint x="875.0" y="1290.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-40914E0C-A24B-4C15-9568-3E6119E2867A" id="BPMNEdge_sid-40914E0C-A24B-4C15-9568-3E6119E2867A">
+        <omgdi:waypoint x="652.0" y="1330.0"></omgdi:waypoint>
+        <omgdi:waypoint x="653.0" y="1365.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-4C632C81-CF21-4396-80D4-CEDC2EE0CB18" id="BPMNEdge_sid-4C632C81-CF21-4396-80D4-CEDC2EE0CB18">
+        <omgdi:waypoint x="653.0" y="1400.0"></omgdi:waypoint>
+        <omgdi:waypoint x="652.0" y="1470.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-531E4592-537E-4122-91FF-7DF899D28F0D" id="BPMNEdge_sid-531E4592-537E-4122-91FF-7DF899D28F0D">
+        <omgdi:waypoint x="652.0" y="1550.0"></omgdi:waypoint>
+        <omgdi:waypoint x="652.0" y="1605.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-C7327AFA-6562-46CE-A94D-8B0C5DD39D01" id="BPMNEdge_sid-C7327AFA-6562-46CE-A94D-8B0C5DD39D01">
+        <omgdi:waypoint x="702.0" y="1645.0"></omgdi:waypoint>
+        <omgdi:waypoint x="801.0" y="1648.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="712.0" y="1645.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-8C869D1C-2E63-4731-B098-3019A026826D" id="BPMNEdge_sid-8C869D1C-2E63-4731-B098-3019A026826D">
+        <omgdi:waypoint x="205.0" y="85.0"></omgdi:waypoint>
+        <omgdi:waypoint x="285.0" y="341.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-504C7BF5-B1CF-4449-9076-79B4908BF6B2" id="BPMNEdge_sid-504C7BF5-B1CF-4449-9076-79B4908BF6B2">
+        <omgdi:waypoint x="891.0" y="747.0"></omgdi:waypoint>
+        <omgdi:waypoint x="860.0" y="752.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-15E9B7FA-7358-4B73-9ED1-FC516E58E163" id="BPMNEdge_sid-15E9B7FA-7358-4B73-9ED1-FC516E58E163">
+        <omgdi:waypoint x="1030.0" y="696.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1031.0" y="747.0"></omgdi:waypoint>
+        <omgdi:waypoint x="991.0" y="747.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="1040.0" y="696.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-99C9CD5A-1CB2-4DA7-B1CB-51776D5896AC" id="BPMNEdge_sid-99C9CD5A-1CB2-4DA7-B1CB-51776D5896AC">
+        <omgdi:waypoint x="269.0" y="546.0"></omgdi:waypoint>
+        <omgdi:waypoint x="215.0" y="546.0"></omgdi:waypoint>
+        <omgdi:waypoint x="215.0" y="600.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-3533C0F1-4928-41F7-8355-B15836FED67F" id="BPMNEdge_sid-3533C0F1-4928-41F7-8355-B15836FED67F">
+        <omgdi:waypoint x="215.0" y="680.0"></omgdi:waypoint>
+        <omgdi:waypoint x="218.0" y="729.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-8C4BD5D0-3E35-4C47-A249-CC3B0BF2C7BF" id="BPMNEdge_sid-8C4BD5D0-3E35-4C47-A249-CC3B0BF2C7BF">
+        <omgdi:waypoint x="855.0" y="1310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="672.0" y="1310.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="865.0" y="1310.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-2CDFC7ED-469C-47A9-B4DD-31E5DB5763F8" id="BPMNEdge_sid-2CDFC7ED-469C-47A9-B4DD-31E5DB5763F8">
+        <omgdi:waypoint x="895.0" y="1310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1000.0" y="1310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1000.0" y="865.0"></omgdi:waypoint>
+        <omgdi:waypoint x="700.0" y="865.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="56.0" width="100.0" x="905.0" y="1310.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-D06235B3-FB6E-4662-AA93-3A14030A0714" id="BPMNEdge_sid-D06235B3-FB6E-4662-AA93-3A14030A0714">
+        <omgdi:waypoint x="875.0" y="1330.0"></omgdi:waypoint>
+        <omgdi:waypoint x="878.0" y="1635.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="885.0" y="1330.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7A1CC640-6FD3-46F6-AE6C-7B19AAF7B62B" id="BPMNEdge_sid-7A1CC640-6FD3-46F6-AE6C-7B19AAF7B62B">
+        <omgdi:waypoint x="672.0" y="950.0"></omgdi:waypoint>
+        <omgdi:waypoint x="825.0" y="950.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="682.0" y="950.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-BE9397FE-2F8E-4966-BA29-727528BE3ED6" id="BPMNEdge_sid-BE9397FE-2F8E-4966-BA29-727528BE3ED6">
+        <omgdi:waypoint x="632.0" y="950.0"></omgdi:waypoint>
+        <omgdi:waypoint x="476.0" y="950.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="642.0" y="950.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-126860F3-676C-4BDD-9BBF-A1B435F0197C" id="BPMNEdge_sid-126860F3-676C-4BDD-9BBF-A1B435F0197C">
+        <omgdi:waypoint x="406.0" y="794.0"></omgdi:waypoint>
+        <omgdi:waypoint x="305.0" y="797.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="14.0" width="100.0" x="416.0" y="794.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-7B58701C-E3C2-45A3-A347-C1CDFBC60D06" id="BPMNEdge_sid-7B58701C-E3C2-45A3-A347-C1CDFBC60D06">
+        <omgdi:waypoint x="426.0" y="774.0"></omgdi:waypoint>
+        <omgdi:waypoint x="679.0" y="682.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="436.0" y="774.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-858D8D83-377C-4E0F-9381-79FDD584AC9A" id="BPMNEdge_sid-858D8D83-377C-4E0F-9381-79FDD584AC9A">
+        <omgdi:waypoint x="652.0" y="970.0"></omgdi:waypoint>
+        <omgdi:waypoint x="652.0" y="1290.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="42.0" width="100.0" x="662.0" y="970.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
